@@ -5,13 +5,34 @@ instance=https://sandbox.zenodo.org
 # accessToken= #live
 accessToken= #sandbox
 
-record_id=184653
-
 # mode=init
 # mode=upload
 # mode=discard
 # mode=publish
 
+# Parse arguments:
+for arg in "$@"; do
+    case $arg in
+    -m=* | --mode=*)
+        mode="${arg#*=}"
+        shift
+        ;;
+    -r=* | --record_id* | --id=*)
+        record_id="${arg#*=}"
+        shift
+        ;;
+    -f=* | --file=*)
+        file="${arg#*=}"
+        shift
+        ;;
+    *)
+        if [ -z "$file" ]; then
+            file="$arg"
+        fi
+    esac
+done
+
+# Main logic:
 if [ "$mode" == "init" ]; then
     echo "Init ..."
     curl -X POST $instance/api/deposit/depositions \
@@ -32,10 +53,9 @@ elif [ "$mode" == "discard" ]; then
     echo -e "Discarded record ID: $record_id \n"
 elif [ "$mode" == "upload" ]; then 
     echo "Uploading file..."
-    file=testfile
     filename=$(basename $file)
     bucket_url=$(curl $instance/api/deposit/depositions/$record_id?access_token=$accessToken | jq -r '.links.bucket')
-    curl --upload-file $file $bucket_url/$filename?access_token=$accessToken
+    curl --progress-bar --upload-file $file $bucket_url/$filename?access_token=$accessToken
     echo -e "Uploaded file: $file \n"
 elif [ "$mode" == "publish" ]; then 
     echo "Publishing..."
@@ -45,5 +65,6 @@ elif [ "$mode" == "publish" ]; then
         -d '{}'
     echo -e "Published record ID: $record_id \n"
 else
-    echo "..."
+    echo "Invalid mode. Use '--mode=init', '--mode=upload', '--mode=discard' or '--mode=publish'."
+    exit 1
 fi
