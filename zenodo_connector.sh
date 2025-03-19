@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# Zenodo Connector
+# 
+# This script is uses the Zenodo API to create, upload, discard and publish records.
+# Usage:  ./zenodo_connector.sh --mode=[init|upload|discard|publish] --record_id=[id] --file=[file]
+# Example:
+#   ./zenodo_connector.sh --mode=init
+#   ./zenodo_connector.sh --mode=upload --record_id=1234 --file=path/to/example.txt
+#   ./zenodo_connector.sh --mode=discard --record_id=1234
+#   ./zenodo_connector.sh --mode=publish --record_id=1234
+
+set -euo pipefail # exit on: error, undefined variable, pipefail
+
 # instance=https://zenodo.org
 instance=https://sandbox.zenodo.org
 # accessToken= #live
