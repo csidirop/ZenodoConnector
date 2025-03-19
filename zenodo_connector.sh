@@ -74,7 +74,7 @@ fi
 # Main logic:
 if [ "$mode" == "init" ]; then
     echo "Init ..."
-    curl -X POST $instance/api/deposit/depositions \
+    curl -sS -X POST $instance/api/deposit/depositions \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
         -d '{}' > response.json
@@ -85,7 +85,7 @@ if [ "$mode" == "init" ]; then
     echo -e "-> $instance/uploads/$record_id \n"
 elif [ "$mode" == "discard" ]; then 
     echo "Discarding..."
-    curl -X POST $instance/api/deposit/depositions/$record_id/actions/discard \
+    curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/discard \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
         -d '{}'
@@ -98,7 +98,7 @@ elif [ "$mode" == "upload" ]; then
     echo -e "Uploaded file: $file \n"
 elif [ "$mode" == "publish" ]; then 
     echo "Publishing..."
-    curl -X POST $instance/api/deposit/depositions/$record_id/actions/publish \
+    curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/publish \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
         -d '{}'
