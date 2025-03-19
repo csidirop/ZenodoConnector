@@ -12,13 +12,11 @@
 
 set -euo pipefail # exit on: error, undefined variable, pipefail
 
-# instance=https://zenodo.org
-instance=https://sandbox.zenodo.org
-
-# mode=init
-# mode=upload
-# mode=discard
-# mode=publish
+# Set default values:
+instance=https://zenodo.org
+access_token=""
+mode=""
+record_id=""
 
 # Parse arguments:
 for arg in "$@"; do
@@ -37,6 +35,11 @@ for arg in "$@"; do
         ;;
     -t=* | --access_token=*)
         access_token="${arg#*=}"
+        shift
+        ;;
+    --sandbox)
+        instance=https://sandbox.zenodo.org
+        echo "Using sandbox instance!"
         shift
         ;;
     *)
