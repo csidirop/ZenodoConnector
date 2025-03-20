@@ -33,7 +33,7 @@ for arg in "$@"; do
         file="${arg#*=}"
         shift
         ;;
-    -t=* | --access_token=*)
+    -t=* | --access_token=* | --token=*)
         access_token="${arg#*=}"
         shift
         ;;
@@ -78,7 +78,6 @@ if [ "$mode" == "init" ]; then
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
         -d '{}' > response.json
-
     record_id=$(jq -r '.record_id' response.json)
     mv response.json response_$record_id.json
     echo "Created record ID: $record_id"
@@ -94,7 +93,9 @@ elif [ "$mode" == "upload" ]; then
     echo "Uploading file..."
     filename=$(basename $file)
     bucket_url=$(curl $instance/api/deposit/depositions/$record_id?access_token=$access_token | jq -r '.links.bucket')
-    curl --progress-bar --upload-file $file $bucket_url/$filename?access_token=$access_token
+    curl --progress-bar "$bucket_url/$filename" \
+     --upload-file "$file" \
+     -H "Authorization: Bearer $access_token"
     echo -e "Uploaded file: $file \n"
 elif [ "$mode" == "publish" ]; then 
     echo "Publishing..."
