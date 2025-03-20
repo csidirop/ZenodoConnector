@@ -73,7 +73,7 @@ fi
 
 # Main logic:
 if [ "$mode" == "init" ]; then
-    echo "Init ..."
+    echo "\nInit ..."
     curl -sS -X POST $instance/api/deposit/depositions \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
@@ -83,27 +83,27 @@ if [ "$mode" == "init" ]; then
     echo "Created record ID: $record_id"
     echo -e "-> $instance/uploads/$record_id \n"
 elif [ "$mode" == "discard" ]; then 
-    echo "Discarding..."
+    echo "\nDiscarding..."
     curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/discard \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
         -d '{}'
-    echo -e "Discarded record ID: $record_id \n"
+    echo -e "\nDiscarded record ID: $record_id \n"
 elif [ "$mode" == "upload" ]; then 
-    echo "Uploading file..."
+    echo "\nUploading file..."
     filename=$(basename $file)
     bucket_url=$(curl $instance/api/deposit/depositions/$record_id?access_token=$access_token | jq -r '.links.bucket')
     curl --progress-bar "$bucket_url/$filename" \
      --upload-file "$file" \
      -H "Authorization: Bearer $access_token"
-    echo -e "Uploaded file: $file \n"
+    echo -e "\nUploaded file: $file \n"
 elif [ "$mode" == "publish" ]; then 
-    echo "Publishing..."
+    echo "\nPublishing..."
     curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/publish \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
         -d '{}'
-    echo -e "Published record ID: $record_id \n"
+    echo -e "\nPublished record ID: $record_id \n"
 else
     echo "Invalid mode. Use '--mode=init', '--mode=upload', '--mode=discard' or '--mode=publish'."
     exit 1
