@@ -39,7 +39,7 @@ for arg in "$@"; do
         ;;
     --sandbox)
         instance=https://sandbox.zenodo.org
-        echo "Using sandbox instance!"
+        echo " -- Using sandbox instance! --"
         shift
         ;;
     *)
@@ -73,24 +73,29 @@ fi
 
 # Main logic:
 if [ "$mode" == "init" ]; then
-    echo "\nInit ..."
+    echo -e "Init ..."
     curl -sS -X POST $instance/api/deposit/depositions \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
         -d '{}' > response.json
+    # Check if response contains error:
+    if [[ $(jq -r '.status' response.json) == 403 ]]; then
+        echo "Zenodo Error: $(jq -r '.message' response.json)"
+        exit 1
+    fi
     record_id=$(jq -r '.record_id' response.json)
     mv response.json response_$record_id.json
     echo "Created record ID: $record_id"
     echo -e "-> $instance/uploads/$record_id \n"
 elif [ "$mode" == "discard" ]; then 
-    echo "\nDiscarding..."
+    echo -e "\nDiscarding..."
     curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/discard \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
         -d '{}'
     echo -e "\nDiscarded record ID: $record_id \n"
 elif [ "$mode" == "upload" ]; then 
-    echo "\nUploading file..."
+    echo -e "\nUploading file..."
     filename=$(basename $file)
     bucket_url=$(curl $instance/api/deposit/depositions/$record_id?access_token=$access_token | jq -r '.links.bucket')
     curl --progress-bar "$bucket_url/$filename" \
@@ -98,7 +103,7 @@ elif [ "$mode" == "upload" ]; then
      -H "Authorization: Bearer $access_token"
     echo -e "\nUploaded file: $file \n"
 elif [ "$mode" == "publish" ]; then 
-    echo "\nPublishing..."
+    echo -e "\nPublishing..."
     curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/publish \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
