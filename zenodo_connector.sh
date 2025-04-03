@@ -17,6 +17,7 @@ instance=https://zenodo.org
 access_token=""
 mode=""
 record_id=""
+file=""
 
 # Parse arguments:
 for arg in "$@"; do
@@ -71,10 +72,12 @@ else
     exit 1
 fi
 
-# Checks for 403 status code in the response:
+# Checks for error status code in the response:
 function statusCheck() {
-    if [[ $(jq -r '.status' <<< "$1") == 403 ]]; then
-        echo "Zenodo Error: $(jq -r '.message'  <<< "$1")"
+    status=$(jq -r '.status' <<< "$1")
+    if [[  $status == 204 || $status == 400 || $status == 401 || $status == 403 || $status == 404
+        || $status == 405 || $status == 409 || $status == 415 || $status == 429 || $status == 500 ]]; then
+        echo "Zenodo Error $status: $(jq -r '.message'  <<< "$1")"
         exit 1
     fi
 }
