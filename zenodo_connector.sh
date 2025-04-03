@@ -71,6 +71,14 @@ else
     exit 1
 fi
 
+# Checks for 403 status code in the response:
+function statusCheck() {
+    if [[ $(jq -r '.status' <<< "$1") == 403 ]]; then
+        echo "Zenodo Error: $(jq -r '.message'  <<< "$1")"
+        exit 1
+    fi
+}
+
 # Main logic:
 if [ "$mode" == "init" ]; then
     echo -e "Initializing record..."
@@ -78,36 +86,34 @@ if [ "$mode" == "init" ]; then
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
         -d '{}' > response.json
-    # Check if response contains error:
-    if [[ $(jq -r '.status' response.json) == 403 ]]; then
-        echo "Zenodo Error: $(jq -r '.message' response.json)"
-        exit 1
-    fi
+    statusCheck "$(cat response.json)"
     record_id=$(jq -r '.record_id' response.json)
     mv response.json response_$record_id.json
-    echo "Created record ID: $record_id"
-    echo -e "-> $instance/uploads/$record_id \n"
+    echo -e "Created record ID: $record_id -> $instance/uploads/$record_id \n"
 elif [ "$mode" == "discard" ]; then 
     echo -e "\nDiscarding record..."
-    curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/discard \
-        -H "Authorization: Bearer "$access_token \
-        -H "Content-Type: application/json" \
-        -d '{}'
+    response=$(curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/discard \
+                    -H "Authorization: Bearer "$access_token \
+                    -H "Content-Type: application/json" \
+                    -d '{}')
+    statusCheck "$response"
     echo -e "\nDiscarded record ID: $record_id \n"
 elif [ "$mode" == "upload" ]; then 
     echo -e "\nUploading file..."
     filename=$(basename $file)
     bucket_url=$(curl $instance/api/deposit/depositions/$record_id?access_token=$access_token | jq -r '.links.bucket')
-    curl --progress-bar "$bucket_url/$filename" \
-     --upload-file "$file" \
-     -H "Authorization: Bearer $access_token"
-    echo -e "\nUploaded file: $file \n"
+    response=$(curl -sS --progress-bar "$bucket_url/$filename" \
+                    --upload-file "$file" \
+                    -H "Authorization: Bearer $access_token")
+    statusCheck "$response"
+    echo -e "\nSuccessfully uploaded file: $file \n"
 elif [ "$mode" == "publish" ]; then 
     echo -e "\nPublishing record..."
-    curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/publish \
-        -H "Authorization: Bearer "$access_token \
-        -H "Content-Type: application/json" \
-        -d '{}'
+    response=$(curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/publish \
+                    -H "Authorization: Bearer "$access_token \
+                    -H "Content-Type: application/json" \
+                    -d '{}')
+    statusCheck "$response"
     echo -e "\nPublished record ID: $record_id \n"
 else
     echo "Invalid mode. Use '--mode=init', '--mode=upload', '--mode=discard' or '--mode=publish'."
