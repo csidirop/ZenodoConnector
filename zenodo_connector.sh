@@ -44,6 +44,13 @@ for arg in "$@"; do
         shift
         ;;
     *)
+        # Check for unknown parameters:
+        if [[ $arg == --* || $arg == -* ]]; then
+            echo "Unknown parameter: $arg"
+            exit 1
+        fi
+
+        # If no file is provided, set the file variable to the last argument:
         if [ -z "$file" ]; then
             file="$arg"
         fi
