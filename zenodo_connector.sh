@@ -125,6 +125,28 @@ elif [ "$mode" == "publish" ]; then
                     -d '{}')
     statusCheck "$response"
     echo -e "\nPublished record ID: $record_id \n"
+elif [ "$mode" == "metadata" ]; then 
+    echo -e "\nSetting metadata..."
+    response=$(curl -sS -X PUT $instance/api/deposit/depositions/$record_id/actions/edit \
+                    -H "Authorization: Bearer "$access_token \
+                    -H "Content-Type: application/json" \
+                    -d '{
+                        "metadata": {
+                            "title": "My Awesome Dataset",
+                            "upload_type": "dataset",
+                            "description": "This dataset contains data on ...",
+                            "creators": [
+                            {
+                                "name": "Doe, John",
+                                "affiliation": "University Name"
+                            }
+                            ]
+                        }
+                        }' \
+                    )
+    echo -e "\nUrl: $instance/api/deposit/depositions/$record_id/ "
+    echo -e "\nResponse: $response"
+    statusCheck "$response"
 else
     echo "Invalid mode. Use '--mode=init', '--mode=upload', '--mode=discard' or '--mode=publish'."
     exit 1
