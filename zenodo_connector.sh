@@ -73,7 +73,7 @@ fi
 
 # Main logic:
 if [ "$mode" == "init" ]; then
-    echo -e "Init ..."
+    echo -e "Initializing record..."
     curl -sS -X POST $instance/api/deposit/depositions \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
@@ -88,7 +88,7 @@ if [ "$mode" == "init" ]; then
     echo "Created record ID: $record_id"
     echo -e "-> $instance/uploads/$record_id \n"
 elif [ "$mode" == "discard" ]; then 
-    echo -e "\nDiscarding..."
+    echo -e "\nDiscarding record..."
     curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/discard \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
@@ -103,7 +103,7 @@ elif [ "$mode" == "upload" ]; then
      -H "Authorization: Bearer $access_token"
     echo -e "\nUploaded file: $file \n"
 elif [ "$mode" == "publish" ]; then 
-    echo -e "\nPublishing..."
+    echo -e "\nPublishing record..."
     curl -sS -X POST $instance/api/deposit/depositions/$record_id/actions/publish \
         -H "Authorization: Bearer "$access_token \
         -H "Content-Type: application/json" \
